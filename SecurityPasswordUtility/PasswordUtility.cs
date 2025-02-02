@@ -46,16 +46,6 @@ namespace SecurityPasswordUtility
             set
             {
                 _autoSaveEnabled = value == 1;
-                /*
-                if (_autoSaveEnabled)
-                {
-                    AutoSaveIsEnabled?.Invoke(this, new EventArgs());
-                }
-                else
-                {
-                    AutoSaveIsDisabled?.Invoke(this, new EventArgs());
-                }
-                */
             }
         }
 
