@@ -6,14 +6,12 @@ namespace SecurityPasswordUtility
 {
     public class PasswordUtility
     {
-        
-		private string _filePath;
-        private int _timeoutMs;
-
         private bool _debug;
+        private string _filePath;
+        private int _timeoutMs;
+        private bool _autoSaveEnabled;
 
         private StringStore passwordStore;
-        private bool _autoSaveEnabled;
 
         //properties
         public string FilePath
@@ -48,7 +46,7 @@ namespace SecurityPasswordUtility
             set
             {
                 _autoSaveEnabled = value == 1;
-
+                /*
                 if (_autoSaveEnabled)
                 {
                     AutoSaveIsEnabled?.Invoke(this, new EventArgs());
@@ -57,6 +55,7 @@ namespace SecurityPasswordUtility
                 {
                     AutoSaveIsDisabled?.Invoke(this, new EventArgs());
                 }
+                */
             }
         }
 
@@ -74,7 +73,6 @@ namespace SecurityPasswordUtility
         public event EventHandler<EventArgs> NotAwaitingSave;
 
 
-
         public void Initialize(string path, int timeoutMs)
         {
             try
@@ -87,7 +85,9 @@ namespace SecurityPasswordUtility
 
                 FilePath = path;
                 TimeoutMs = timeoutMs;
-                passwordStore = new StringStore(FilePath, TimeoutMs, Debug);
+                passwordStore = new StringStore(FilePath, TimeoutMs, true);
+                passwordStore.Debug = Debug == 1;
+                passwordStore.AutoSaveEnabled = AutoSaveEnabled == 1;
 
                 passwordStore.IsInitialized += PasswordStore_IsInitialized;
                 passwordStore.FileFound += PasswordStore_FileFound;
@@ -112,11 +112,16 @@ namespace SecurityPasswordUtility
             }   
         }
 
-
         public void SetDebug(ushort d)
         {
             Debug = d;
-            passwordStore.Debug = d;
+            passwordStore.Debug = d == 1;
+        }
+
+        public void SetAutoSave(ushort a)
+        {
+            AutoSaveEnabled = a;
+            passwordStore.AutoSaveEnabled = a == 1;
         }
 
         public void ReadFile()
@@ -158,8 +163,6 @@ namespace SecurityPasswordUtility
                 ErrorLog.Error($"PasswordUtility.SetPasswordFromSimpl: Error: {e}");
             }
         }
-
-
 
         private void PasswordStore_NotAwaitingSave(object sender, EventArgs e)
         {
@@ -215,7 +218,5 @@ namespace SecurityPasswordUtility
         {
             PasswordListUpdated?.Invoke(this, e);
         }
-
-
     }
 }

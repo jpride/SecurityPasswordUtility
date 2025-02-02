@@ -26,16 +26,12 @@ namespace StringStorageUtility
         #endregion
 
         #region	Proprties
-        public ushort Debug
+        public bool Debug
 		{
-			get 
-			{
-				return (ushort)(_debug ? 1 : 0); 
-			}
-			set 
-			{
-                CrestronConsole.PrintLine($"StringStore - Setting _debug to {value == 1}");
-                _debug = value == 1;
+			get {return _debug;}
+			set {
+				CrestronConsole.PrintLine($"StringStore - Setting _debug to {value}");
+                _debug = value;
 			}
 		}
 
@@ -51,27 +47,22 @@ namespace StringStorageUtility
 			set { _timeoutMs = value; }
 		}
 
-		public ushort AutoSaveEnabled
-		{
-			get 
-			{ 
-				return ((ushort)(_autoSaveEnabled ? 1 : 0)); 
-			}
-
+        public bool AutoSaveEnabled
+        {
+            get {return _autoSaveEnabled;}
 			set 
-			{ 
-				_autoSaveEnabled = value == 1; 
-
-                if (_autoSaveEnabled) 
-				{ 
-					AutoSaveIsEnabled?.Invoke(this, new EventArgs()); 
-				} 
-				else 
-				{ 
-					AutoSaveIsDisabled?.Invoke(this, new EventArgs()); 
-				}	
+			{
+				_autoSaveEnabled = value;
+                if (_autoSaveEnabled)
+                {
+                    AutoSaveIsEnabled?.Invoke(this, new EventArgs());
+                }
+                else
+                {
+                    AutoSaveIsDisabled?.Invoke(this, new EventArgs());
+                }
             }
-		}
+        }
 
         #endregion
 
@@ -90,7 +81,7 @@ namespace StringStorageUtility
         #endregion
 
         #region Methods
-        public StringStore(string path, int timeoutMs, ushort debug)
+        public StringStore(string path, int timeoutMs, bool debug)
         {
             if (_debug)
             {
@@ -248,6 +239,8 @@ namespace StringStorageUtility
                 {
                     CrestronConsole.PrintLine($"Recieved string from simpl\n");
                     CrestronConsole.PrintLine($"string[{i}]: {s}\n");
+					CrestronConsole.PrintLine($"Initialized: {Initialized}");
+					CrestronConsole.PrintLine($"AutosaveEnabled: {_autoSaveEnabled}");
                 }
 
                 if (i < 0)
@@ -271,8 +264,9 @@ namespace StringStorageUtility
                         _awaitingSave = true;
                     }
 
-					if (_awaitingSave && !_autoSaveEnabled)
-					{
+					if (_awaitingSave) // (_awaitingSave && !_autoSaveEnabled)
+                    {
+						//CrestronConsole.PrintLine($"Raising AwaitingSave Event in StringStore");
                         //raise event for simpl
                         AwaitingSave?.Invoke(this, new EventArgs());
                     }
@@ -317,6 +311,8 @@ namespace StringStorageUtility
 
 		private void RestartSaveTimer()
 		{
+			if (_debug) { CrestronConsole.PrintLine($"Entered RestartSaveTimer"); }
+
 			//if a timer is running, kill it
 			if (_saveTimer != null)
 			{
@@ -330,8 +326,10 @@ namespace StringStorageUtility
 
 		private void SaveTimerCallback(object o)
 		{
-			//write to file
-			WriteFile();
+            if (_debug) { CrestronConsole.PrintLine($"Entered SaveTimerCallBack"); }
+
+            //write to file
+            WriteFile();
 		}
 
 		#endregion
