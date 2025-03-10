@@ -1,25 +1,27 @@
 ﻿using System;
+using System.Collections.Generic;
 using Crestron.SimplSharp;
 using StringStorageUtility;
 
 namespace SecurityPasswordUtility
 {
-    public class PasswordUtility
+    public static class PasswordUtility
     {
-        private bool _debug;
-        private string _filePath;
-        private int _timeoutMs;
-        private bool _autoSaveEnabled;
+        private static bool _debug;
+        private static string _filePath;
+        private static int _timeoutMs;
+        private static bool _autoSaveEnabled;
 
-        private StringStore passwordStore;
+        public static StringStore passwordStore;
+
 
         //properties
-        public string FilePath
+        public static string FilePath
 		{
 			get { return _filePath; }
 			set { _filePath = value; }
 		}
-        public ushort Debug
+        public static ushort Debug
         {
             get
             {
@@ -31,12 +33,12 @@ namespace SecurityPasswordUtility
                 _debug = value == 1;
             }
         }
-        public int TimeoutMs
+        public static int TimeoutMs
         {
             get { return _timeoutMs; }
             set { _timeoutMs = value; }
         }
-        public ushort AutoSaveEnabled
+        public static ushort AutoSaveEnabled
         {
             get
             {
@@ -50,20 +52,21 @@ namespace SecurityPasswordUtility
         }
 
 
-        public event EventHandler<StringListUpdateEventArgs> PasswordListUpdated;
-        public event EventHandler<EventArgs> FileFound;
-        public event EventHandler<EventArgs> IsInitialized;
-        public event EventHandler<EventArgs> ReadStarted;
-        public event EventHandler<EventArgs> WriteStarted;
-        public event EventHandler<EventArgs> ReadComplete;
-        public event EventHandler<EventArgs> WriteComplete;
-        public event EventHandler<EventArgs> AutoSaveIsEnabled;
-        public event EventHandler<EventArgs> AutoSaveIsDisabled;
-        public event EventHandler<EventArgs> AwaitingSave;
-        public event EventHandler<EventArgs> NotAwaitingSave;
+        public static event EventHandler FileFound;
+        public static event EventHandler IsInitialized;
+        public static event EventHandler ReadStarted;
+        public static event EventHandler WriteStarted;
+        public static event EventHandler ReadComplete;
+        public static event EventHandler WriteComplete;
+        public static event EventHandler AutoSaveIsEnabled;
+        public static event EventHandler AutoSaveIsDisabled;
+        public static event EventHandler AwaitingSave;
+        public static event EventHandler NotAwaitingSave;
 
 
-        public void Initialize(string path, int timeoutMs)
+
+
+        public static void Initialize(string path, int timeoutMs)
         {
             try
             {
@@ -81,7 +84,6 @@ namespace SecurityPasswordUtility
 
                 passwordStore.IsInitialized += PasswordStore_IsInitialized;
                 passwordStore.FileFound += PasswordStore_FileFound;
-                passwordStore.StringListUpdated += PasswordStore_StringListUpdated;
                 passwordStore.ReadStarted += PasswordStore_ReadStarted;
                 passwordStore.ReadComplete += PasswordStore_ReadCompleted;
                 passwordStore.WriteStarted += PasswordStore_WriteStarted;
@@ -102,19 +104,19 @@ namespace SecurityPasswordUtility
             }   
         }
 
-        public void SetDebug(ushort d)
+        public static void SetDebug(ushort d)
         {
             Debug = d;
             passwordStore.Debug = d == 1;
         }
 
-        public void SetAutoSave(ushort a)
+        public static void SetAutoSave(ushort a)
         {
             AutoSaveEnabled = a;
             passwordStore.AutoSaveEnabled = a == 1;
         }
-
-        public void ReadFile()
+        
+        public static void ReadFile()
         {
             try
             {
@@ -127,11 +129,12 @@ namespace SecurityPasswordUtility
             }
         }
 
-        public void WriteFile()
+        public static void WriteFile()
         {
             try
             {
                 passwordStore.WriteFile();
+                ;
             }
             catch (Exception e)
             {
@@ -140,7 +143,7 @@ namespace SecurityPasswordUtility
             }
         }
 
-        public void SetPasswordFromSimpl(ushort i, string p)
+        public static void SetPasswordFromSimpl(ushort i, string p)
         {
             try
             {
@@ -154,59 +157,73 @@ namespace SecurityPasswordUtility
             }
         }
 
-        private void PasswordStore_NotAwaitingSave(object sender, EventArgs e)
+        public static List<string> GetPasswordList()
         {
-            NotAwaitingSave?.Invoke(this, new EventArgs());
+            try
+            {
+                return passwordStore.GetStringList();
+            }
+            catch (Exception e)
+            {
+                if (_debug) { CrestronConsole.PrintLine($"PasswordUtility.SendListToNode: Error: {e}"); }
+                ErrorLog.Error($"PasswordUtility.SendListToNode: Error: {e}");
+                return null;
+            }
         }
 
-        private void PasswordStore_AwaitingSave(object sender, EventArgs e)
+        private static void PasswordStore_NotAwaitingSave(object sender, EventArgs e)
         {
-            AwaitingSave?.Invoke(this, new EventArgs());
+            NotAwaitingSave?.Invoke(sender, new EventArgs());
         }
 
-        private void PasswordStore_AutoSaveIsDisabled(object sender, EventArgs e)
+        private static void PasswordStore_AwaitingSave(object sender, EventArgs e)
         {
-            AutoSaveIsDisabled?.Invoke(this, new EventArgs());
+            AwaitingSave?.Invoke(sender, new EventArgs());
         }
 
-        private void PasswordStore_AutoSaveIsEnabled(object sender, EventArgs e)
+        private static void PasswordStore_AutoSaveIsDisabled(object sender, EventArgs e)
         {
-            AutoSaveIsEnabled?.Invoke(this, new EventArgs());
+            AutoSaveIsDisabled?.Invoke(sender, new EventArgs());
         }
 
-        private void PasswordStore_WriteCompleted(object sender, EventArgs e)
+        private static void PasswordStore_AutoSaveIsEnabled(object sender, EventArgs e)
         {
-            WriteComplete?.Invoke(this, new EventArgs());   
+            AutoSaveIsEnabled?.Invoke(sender, new EventArgs());
         }
 
-        private void PasswordStore_WriteStarted(object sender, EventArgs e)
+        private static void PasswordStore_WriteCompleted(object sender, EventArgs e)
         {
-            WriteStarted?.Invoke(this, new EventArgs());
+            WriteComplete?.Invoke(sender, new EventArgs());
         }
 
-        private void PasswordStore_ReadCompleted(object sender, EventArgs e)
+        private static void PasswordStore_WriteStarted(object sender, EventArgs e)
         {
-            ReadComplete?.Invoke(this, new EventArgs());    
+            WriteStarted?.Invoke(sender, new EventArgs());
         }
 
-        private void PasswordStore_ReadStarted(object sender, EventArgs e)
+        private static void PasswordStore_ReadCompleted(object sender, EventArgs e)
         {
-            ReadStarted?.Invoke(this, new EventArgs());
+            ReadComplete?.Invoke(sender, new EventArgs());
         }
 
-        private void PasswordStore_IsInitialized(object sender, EventArgs e)
+        private static void PasswordStore_ReadStarted(object sender, EventArgs e)
         {
-            IsInitialized?.Invoke(this, new EventArgs());   
+            ReadStarted?.Invoke(sender, new EventArgs());
         }
 
-        private void PasswordStore_FileFound(object sender, EventArgs e)
+        private static void PasswordStore_IsInitialized(object sender, EventArgs e)
         {
-            FileFound?.Invoke(this, new EventArgs());
+            IsInitialized?.Invoke(sender, new EventArgs());
         }
 
-        private void PasswordStore_StringListUpdated(object sender, StringListUpdateEventArgs e)
+        private static void PasswordStore_FileFound(object sender, EventArgs e)
         {
-            PasswordListUpdated?.Invoke(this, e);
+            FileFound?.Invoke(sender, new EventArgs());
         }
+
+
     }
+
+
+
 }

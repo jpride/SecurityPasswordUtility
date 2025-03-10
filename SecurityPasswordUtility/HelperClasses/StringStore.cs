@@ -15,7 +15,7 @@ namespace StringStorageUtility
         private string _filePath;
         private static readonly object _fileStreamLock = new object();
         private bool _debug;
-        private List<string> _stringsList;
+        public List<string> _stringsList;
         private CTimer _saveTimer;
         private int _timeoutMs;
         private JsonStringObject jso;
@@ -285,6 +285,11 @@ namespace StringStorageUtility
                 ErrorLog.Error($"StringStore: Error in SetStringFromSimpl(): {e}\n");
             }
         }
+
+		public List<string> GetStringList()
+		{
+			return _stringsList;
+		}
 
 		private void TransportStringsToSimpl(List<string> l)
 		{ 
