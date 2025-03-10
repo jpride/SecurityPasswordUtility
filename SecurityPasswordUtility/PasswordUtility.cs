@@ -5,6 +5,8 @@ using StringStorageUtility;
 
 namespace SecurityPasswordUtility
 {
+
+
     public static class PasswordUtility
     {
         private static bool _debug;
@@ -12,8 +14,7 @@ namespace SecurityPasswordUtility
         private static int _timeoutMs;
         private static bool _autoSaveEnabled;
 
-        public static StringStore passwordStore;
-
+        private static StringStore passwordStore;
 
         //properties
         public static string FilePath
@@ -62,8 +63,7 @@ namespace SecurityPasswordUtility
         public static event EventHandler AutoSaveIsDisabled;
         public static event EventHandler AwaitingSave;
         public static event EventHandler NotAwaitingSave;
-
-
+        public static event EventHandler PasswordListUpdated;  
 
 
         public static void Initialize(string path, int timeoutMs)
@@ -157,6 +157,17 @@ namespace SecurityPasswordUtility
             }
         }
 
+        public static string SendListItemToSimpl(ushort index)
+        {
+            if (index < passwordStore._stringsList.Count)
+            {
+                return passwordStore._stringsList[index];
+            }
+
+            return string.Empty;
+
+        }
+
         public static List<string> GetPasswordList()
         {
             try
@@ -193,6 +204,7 @@ namespace SecurityPasswordUtility
 
         private static void PasswordStore_WriteCompleted(object sender, EventArgs e)
         {
+            PasswordListUpdated?.Invoke(sender, new EventArgs());
             WriteComplete?.Invoke(sender, new EventArgs());
         }
 
@@ -203,6 +215,7 @@ namespace SecurityPasswordUtility
 
         private static void PasswordStore_ReadCompleted(object sender, EventArgs e)
         {
+            PasswordListUpdated?.Invoke(sender, new EventArgs());
             ReadComplete?.Invoke(sender, new EventArgs());
         }
 
