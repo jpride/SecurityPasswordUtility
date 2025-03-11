@@ -1,23 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using StringStorageUtility;
+
 
 
 namespace SecurityPasswordUtility
 {
     public class PasswordNode
     {
+        #region Variables
         public string LocalBackdoorPass { get; set; }
 
-        public List<string> passwordList = new List<string>();
+        private List<string> passwordList = new List<string>();
 
         public event EventHandler<PasswordSuccessEventArgs> PasswordSuccess;
         public event EventHandler<EventArgs> BackdoorPasswordSuccess;
         public event EventHandler<EventArgs> PasswordFailure;
+        #endregion
 
-
-
-
+        #region Methods
         public void Initialize()
         {
             PasswordUtility.ReadComplete += PasswordUtility_ReadComplete;
@@ -39,7 +39,7 @@ namespace SecurityPasswordUtility
             if (password == LocalBackdoorPass)
             {
                 BackdoorPasswordSuccess?.Invoke(this, new EventArgs());
-                return;
+                return; //exit method if true
             }
 
             else
@@ -50,20 +50,22 @@ namespace SecurityPasswordUtility
                     if (password == p)
                     {
                         PasswordSuccess?.Invoke(this, new PasswordSuccessEventArgs { index = i });
-                        return;
+                        return; //exit method if true
                     }
 
                     i++;
                 }
             }
                         
-            PasswordFailure?.Invoke(this, new EventArgs());
+            PasswordFailure?.Invoke(this, new EventArgs()); //only gets called if noth conditions were false
         }
+        #endregion
     }
-
+    #region EventArgs
     public class PasswordSuccessEventArgs : EventArgs
     {
         public ushort index { get; set; }
     }
+    #endregion
 
 }

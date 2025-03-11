@@ -5,10 +5,9 @@ using StringStorageUtility;
 
 namespace SecurityPasswordUtility
 {
-
-
     public static class PasswordUtility
     {
+        #region Variables
         private static bool _debug;
         private static string _filePath;
         private static int _timeoutMs;
@@ -51,8 +50,9 @@ namespace SecurityPasswordUtility
                 _autoSaveEnabled = value == 1;
             }
         }
+        #endregion
 
-
+        #region Events
         public static event EventHandler FileFound;
         public static event EventHandler IsInitialized;
         public static event EventHandler ReadStarted;
@@ -63,9 +63,10 @@ namespace SecurityPasswordUtility
         public static event EventHandler AutoSaveIsDisabled;
         public static event EventHandler AwaitingSave;
         public static event EventHandler NotAwaitingSave;
-        public static event EventHandler PasswordListUpdated;  
+        public static event EventHandler PasswordListUpdated;
+        #endregion
 
-
+        #region Methods
         public static void Initialize(string path, int timeoutMs)
         {
             try
@@ -78,7 +79,8 @@ namespace SecurityPasswordUtility
 
                 FilePath = path;
                 TimeoutMs = timeoutMs;
-                passwordStore = new StringStore(FilePath, TimeoutMs, true);
+
+                passwordStore = new StringStore(FilePath, TimeoutMs, false);
                 passwordStore.Debug = Debug == 1;
                 passwordStore.AutoSaveEnabled = AutoSaveEnabled == 1;
 
@@ -181,7 +183,9 @@ namespace SecurityPasswordUtility
                 return null;
             }
         }
+        #endregion
 
+        #region Eventhandlers
         private static void PasswordStore_NotAwaitingSave(object sender, EventArgs e)
         {
             NotAwaitingSave?.Invoke(sender, new EventArgs());
@@ -233,10 +237,7 @@ namespace SecurityPasswordUtility
         {
             FileFound?.Invoke(sender, new EventArgs());
         }
-
+        #endregion
 
     }
-
-
-
 }
