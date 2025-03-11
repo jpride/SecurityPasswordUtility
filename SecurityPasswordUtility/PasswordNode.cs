@@ -64,6 +64,6 @@ namespace SecurityPasswordUtility
     public class PasswordSuccessEventArgs : EventArgs
     {
         public ushort index { get; set; }
-
     }
+
 }
